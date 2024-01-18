@@ -1,0 +1,37 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  min-height: 100vh;
+  /* max-width: 100vh; */
+}
+h1 {
+  text-align: center;
+}
+main {
+  background-color: red;
+  max-width: 1000px;
+  max-height: 1000px;
+  min-width: 800px;
+  min-height: 800px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+
+  //   grid-template-rows: repeat(4, 1fr);
+}
+.square {
+  display: block;
+  max-width: 250px;
+  max-height: 250px;
+  min-width: 200px;
+  min-height: 200px;
+}
+.white-block {
+  background-color: #efefd3;
+}
+.black-block {
+  background-color: #7a995b;
+}

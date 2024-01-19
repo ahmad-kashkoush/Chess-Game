@@ -5,10 +5,15 @@ export class Piece {
         this.name = name;
         this.rank = rank;
     }
+
     setPos(pos) {
         this.pos = pos;
     }
-    getAvaliableMoves() {
+    validPos = (pos => !(pos > 88 || pos < 11));
+    getImageName() {
+        return `${this.color}-${this.rank}.png`
+    }
+    getAllowedMoves() {
         return [];
     }
     getTopMoves() {
@@ -83,4 +88,16 @@ export class Piece {
         return moves;
     }
 
+}
+
+export const PieceTest = function (testPiece) {
+
+    console.log(`Top Moves: ${testPiece.getTopMoves()}`);
+    console.log(`Bottom Moves: ${testPiece.getBottomMoves()}`);
+    console.log(`Left Moves: ${testPiece.getLeftMoves()}`);
+    console.log(`Right Moves: ${testPiece.getRightMoves()}`);
+    console.log(`Top Left Moves: ${testPiece.getTopLeftMoves()}`);
+    console.log(`Top Right Moves: ${testPiece.getTopRightMoves()}`);
+    console.log(`Bottom Left Moves: ${testPiece.getBottomLeftMoves()}`);
+    console.log(`Bottom Right Moves: ${testPiece.getBottomRightMoves()}`);
 }

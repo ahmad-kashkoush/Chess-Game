@@ -1,12 +1,18 @@
 import { Piece } from "./pieces/Piece";
+import { Pawn } from "./pieces/Pawn";
+import { Knight } from "./pieces/Knight";
+import { Rook } from "./pieces/Rook";
+import { Queen } from "./pieces/Queen";
+import { Bishop } from "./pieces/Bishop";
 
-const testPiece = new Piece(44, 5, "red", "test");
+const testAllowed = function (test) {
+    console.log(`${test.name} Allowed Moves:${test.getAllowedMoves()}`);
+}
 
-console.log(`Top Moves: ${testPiece.getTopMoves()}`);
-console.log(`Bottom Moves: ${testPiece.getBottomMoves()}`);
-console.log(`Left Moves: ${testPiece.getLeftMoves()}`);
-console.log(`Right Moves: ${testPiece.getRightMoves()}`);
-console.log(`Top Left Moves: ${testPiece.getTopLeftMoves()}`);
-console.log(`Top Right Moves: ${testPiece.getTopRightMoves()}`);
-console.log(`Bottom Left Moves: ${testPiece.getBottomLeftMoves()}`);
-console.log(`Bottom Right Moves: ${testPiece.getBottomRightMoves()}`);
+
+testAllowed(new Knight(55, "white", "knight"));
+testAllowed(new Pawn(55, "black", "pawn"));
+testAllowed(new Rook(55, "white", "rook"));
+testAllowed(new Queen(55, "white", "queen"));
+testAllowed(new Bishop(55, "white", "bishop"));
+

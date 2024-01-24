@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "parcel src/index.html",
+    "dev": "cp -r src/img/*png dist && parcel src/index.html ",
     "build": "parcel build src/index.html"
   },
   "keywords": [],

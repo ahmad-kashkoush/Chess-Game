@@ -11,27 +11,32 @@ h1 {
   text-align: center;
 }
 main {
-  background-color: red;
-  max-width: 1000px;
-  max-height: 1000px;
-  min-width: 800px;
-  min-height: 800px;
+  max-width: 90%;
+  width: fit-content;
   margin: auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-
-  //   grid-template-rows: repeat(4, 1fr);
+  grid-template-rows: repeat(8, auto);
+}
+.row-odd,
+.row-even {
+  background-color: red;
+  display: grid;
+  grid-template-columns: repeat(8, auto);
+  height: 87px;
 }
 .square {
-  display: block;
-  max-width: 250px;
-  max-height: 250px;
-  min-width: 200px;
-  min-height: 200px;
+  width: 87px;
 }
-.white-block {
+.row-odd .square:nth-of-type(even),
+.row-even .square:nth-of-type(odd) {
+  background-color: #7a995b;
+}
+.row-even .square:nth-of-type(even),
+.row-odd .square:nth-of-type(odd) {
   background-color: #efefd3;
 }
-.black-block {
-  background-color: #7a995b;
+
+.row-even .square.available-square,
+.row-odd .square.available-square {
+  background-color: red;
 }

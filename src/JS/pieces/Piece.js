@@ -5,14 +5,26 @@ export class Piece {
         this.name = name;
         this.rank = rank;
     }
-
+    addHandler(handler) {
+        document.addEventListener('click', function (e) {
+            const ele = e.target.closest(`[data-pos="${this.pos}"]`);
+            if (!ele) return;
+            // console.log(this.getAllowedMoves());
+            handler(this);
+        }.bind(this));
+    }
     setPos(pos) {
         this.pos = pos;
     }
-    validPos = (pos => !(pos > 88 || pos < 11));
-    getImageName() {
-        return `${this.color}-${this.rank}.png`
+    getPos() {
+        return this.pos;
     }
+    validPos(pos) {
+        return (pos >= 11 && pos <= 88 && pos % 10 > 0 && pos % 10 < 9);
+    }
+    // getSrc() {
+    //     return require(`../../img/${this.color}-${this.name}.png`);
+    // }
     getAllowedMoves() {
         return [];
     }

@@ -17,6 +17,9 @@ import { Bishop } from "./pieces/Bishop";
 // testAllowed(new Bishop(55, "white", "bishop"));
 
 const getPieceSquare = (pos => document.querySelector(`[data-pos="${pos}"]`));
+const removeAvailableSelection = function () {
+    [...document.querySelectorAll('.available-square')].forEach(ele => ele.classList.remove('available-square'));
+}
 const resetBoard = function (pieces) {
 
     pieces.forEach(piece => {
@@ -30,6 +33,45 @@ const resetBoard = function (pieces) {
     });
 
 }
+const displayAvailable = function (piece) {
+    const arrOfAllowed = piece.getAllowedMoves();
+    console.log(arrOfAllowed);
+    removeAvailableSelection();
+    arrOfAllowed.forEach(pos => {
+        const curSquare = getPieceSquare(pos);
+
+        curSquare.classList.add('available-square');
+        console.log(curSquare);
+        curSquare.addEventListener('click', function (e) {
+            moveCurPiece(pos, piece);
+        });
+
+    })
+
+}
+
+
+const moveCurPiece = function (toPos, piece) {
+    const curSquare = getPieceSquare(piece.getPos());
+    curSquare.innerHTML = '';
+    piece.setPos(toPos);
+    const square = getPieceSquare(piece.getPos());
+    const img = document.createElement("img");
+    let path = `${piece.color}-${piece.name}.png`
+    console.log(path);
+    img.src = new URL(path, import.meta.url);
+    square.appendChild(img);
+    removeAvailableSelection();
+
+
+}
+
+
+
+
+
+
+
 
 const addPawnsHelper = (starterPosition, color) => {
     const pawns = [];

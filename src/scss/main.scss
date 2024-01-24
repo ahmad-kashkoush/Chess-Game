@@ -35,3 +35,8 @@ main {
 .row-odd .square:nth-of-type(odd) {
   background-color: #efefd3;
 }
+
+.row-even .square.available-square,
+.row-odd .square.available-square {
+  background-color: red;
+}

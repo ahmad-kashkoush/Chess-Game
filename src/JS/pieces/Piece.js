@@ -5,14 +5,24 @@ export class Piece {
         this.name = name;
         this.rank = rank;
     }
-    addHandler(handler) {
-        document.addEventListener('click', function (e) {
-            const ele = e.target.closest(`[data-pos="${this.pos}"]`);
-            if (!ele) return;
-            // console.log(this.getAllowedMoves());
-            handler(this);
-        }.bind(this));
-    }
+    // addHandler(handler) {
+    //     document.addEventListener('click', function (e) {
+    //         const ele = e.target.closest(`[data-pos="${this.pos}"]`);
+    //         if (!ele) return;
+    //         // console.log(ele);
+
+    //         handler(this);
+    //     }.bind(this));
+    // }
+    // removeHandler(handler) {
+    //     document.removeEventListener('click', function (e) {
+    //         const ele = e.target.closest(`[data-pos="${this.pos}"]`);
+    //         if (!ele) return;
+    //         // console.log(ele);
+
+    //         handler(this);
+    //     }.bind(this));
+    // }
     setPos(pos) {
         this.pos = pos;
     }

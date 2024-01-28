@@ -170,15 +170,32 @@ export class Game {
         // console.log(allowedMoves);
         return allowedMoves;
     }
+    promote(piece) {
+        const option = prompt("r:rook\nk:knight\nb:bishop\nothers:queen\nEnter Promote Options");
+
+        let newPiece;
+        if (option === "r")
+            newPiece = new Rook(piece.pos, piece.color, "rook");
+        else if (option === "k")
+            newPiece = new Knight(piece.pos, piece.color, "knight");
+        else if (option === "b")
+            newPiece = new Knight(piece.pos, piece.color, "bishop");
+        else
+            newPiece = new Queen(piece.pos, piece.color, "queen");
+
+        this.kill(piece);
+        this.setImage(newPiece);
+        this.pieces.push(newPiece);
+    }
     enPassent(piece, position) {
         /* Case
-            - When friend pawn goes two moves 
-            - friend pawn crossed potential capture square for enemy pawn
-         What Happens?
-            - enemy pawn can still capture it
-            - you mark crossed square as available 
-            - moving to crossed means killing friend pawn
-        */
+      - When friend pawn goes two moves 
+      - friend pawn crossed potential capture square for enemy pawn
+   What Happens?
+      - enemy pawn can still capture it
+      - you mark crossed square as available 
+      - moving to crossed means killing friend pawn
+  */
 
         const pos = this.turn === "white" ? position + 10 : position - 10;
         if (pos === piece.pos) return;

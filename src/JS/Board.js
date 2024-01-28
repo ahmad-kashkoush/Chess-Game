@@ -5,7 +5,7 @@ import { Rook } from "./pieces/Rook";
 import { Queen } from "./pieces/Queen";
 import { Bishop } from "./pieces/Bishop";
 import { Game } from "./Game";
-
+import { King } from "./pieces/King";
 
 const beginGame = function (game) {
     // ! Helper Functions
@@ -29,15 +29,16 @@ const beginGame = function (game) {
 
     const setAllowedSquares = function (piece) {
         clickedPiece = piece;
+
         const arrOfAllowed = game.getPieceAllowedMoves(piece);
 
         removeAvailableSelection();
-        arrOfAllowed.forEach(pos => {
+        arrOfAllowed?.forEach(pos => {
             const availableSquare = game.getPieceSquare(pos);
             availableSquare.classList.add('available-square');
 
         })
-        console.log(arrOfAllowed);
+
         if (!arrOfAllowed) removeAvailableSelection();
     }
     const movePieceToSquare = function (square) {
@@ -98,7 +99,7 @@ const pieces = [
     new Knight(82, "white", "knight"),
     new Bishop(83, "white", "bishop"),
     new Queen(84, "white", "queen"),
-    new Knight(85, "white", "king"),
+    new King(85, "white", "king"),
     new Bishop(86, "white", "bishop"),
     new Knight(87, "white", "knight"),
     new Rook(88, "white", "rook"),
@@ -108,7 +109,7 @@ const pieces = [
     new Knight(12, "black", "knight"),
     new Bishop(13, "black", "bishop"),
     new Queen(14, "black", "queen"),
-    new Knight(15, "black", "king"),
+    new King(15, "black", "king"),
     new Bishop(16, "black", "bishop"),
     new Knight(17, "black", "knight"),
     new Rook(18, "black", "rook"),

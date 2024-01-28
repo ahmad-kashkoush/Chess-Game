@@ -80,12 +80,79 @@ export class Game {
 
     }
     getPieceAllowedMoves(piece) {
-        return piece.getAllowedMoves().filter(pos => {
-            const piece = this.getPieceByPos(pos);
-            if (piece && piece.color === this.turn)
-                return false;
-            return true;
-        });
+
+        if (piece.name === "knight")
+            return piece.getAllowedMoves().filter(pos => {
+                const piece = this.getPieceByPos(pos);
+                if (piece && piece.color === this.turn)
+                    return false;
+                return true;
+            });
+        return this.unblockedMoves(piece);
+    }
+    unblockedMoves(piece) {
+        let allowedMoves = piece.getAllowedMoves();
+
+        if (piece.name === "pawn") {
+            // allowedMoves = piece.getAllowedMoves();
+            const arrOfPieces = allowedMoves.map(ele => this.getPieceByPos(ele));
+            arrOfPieces.forEach(ele => {
+                if (ele && Math.abs(ele.pos - piece.pos) !== 11 && Math.abs(ele.pos - piece.pos !== 9))
+                    allowedMoves.splice(allowedMoves.indexOf(ele.pos), 1);
+
+            });
+
+            return allowedMoves;
+        }
+
+        const arrOfPieces = allowedMoves.map(ele => this.getPieceByPos(ele));
+
+        const toRemove = [];
+        for (const ele of arrOfPieces) {
+
+            if (!ele) continue;
+            if (toRemove.indexOf(ele.pos) !== -1) continue;
+
+            // remove ele if friend
+            if (ele.color === this.turn)
+                toRemove.push(ele.pos);
+            // remove elements in its direction
+
+            // if (ele.pos > piece.pos) {
+            //     const diff = ele.pos - piece.pos;
+            //     if (diff % 10 === 0) toRemove.push(...ele.getBottomMoves());
+            //     else if (diff < 8) toRemove.push(...ele.getRightMoves());
+            //     else {
+            //         if(piece.get)
+            //     }
+            // } else {
+            //     const diff = piece.pos - ele.pos;
+            //     if (diff % 10 === 0) toRemove.push(...ele.getTopMoves());
+            //     if (diff % 10 === 9) toRemove.push(...ele.getTopRightMoves());
+            //     if (diff === 1) toRemove.push(...ele.getRightMoves());
+            //     else if (diff % 10 === 1) toRemove.push(...ele.getTopLeftMoves());
+            // }
+            if (piece.getTopMoves().indexOf(ele.pos) !== -1)
+                toRemove.push(...ele.getTopMoves());
+            if (piece.getBottomMoves().indexOf(ele.pos) !== -1)
+                toRemove.push(...ele.getBottomMoves());
+            if (piece.getLeftMoves().indexOf(ele.pos) !== -1)
+                toRemove.push(...ele.getLeftMoves());
+            if (piece.getRightMoves().indexOf(ele.pos) !== -1)
+                toRemove.push(...ele.getRightMoves());
+            if (piece.getTopLeftMoves().indexOf(ele.pos) !== -1)
+                toRemove.push(...ele.getTopLeftMoves());
+            if (piece.getTopRightMoves().indexOf(ele.pos) !== -1)
+                toRemove.push(...ele.getTopRightMoves());
+            if (piece.getBottomRightMoves().indexOf(ele.pos) !== -1)
+                toRemove.push(...ele.getBottomRightMoves());
+            if (piece.getBottomLeftMoves().indexOf(ele.pos) !== -1)
+                toRemove.push(...ele.getBottomLeftMoves());
+
+        }
+        allowedMoves = allowedMoves.filter(pos => (toRemove.indexOf(pos) === -1));
+        // console.log(allowedMoves);
+        return allowedMoves;
     }
     promote() { }
     enPassent() {

@@ -10,4 +10,9 @@ export class King extends Piece {
         this.pos + 9, this.pos - 9,
         this.pos + 10, this.pos - 10].filter(poos => this.validPos(poos));
     }
+    /* Block moves
+        - cant move to square that make it check
+            - Iterate over all enemy pieces
+            - remove intersected squares between enemy and king
+    */
 }

@@ -27,6 +27,9 @@ main {
 .square {
   width: 87px;
 }
+.square img {
+  width: 100%;
+}
 .row-odd .square:nth-of-type(even),
 .row-even .square:nth-of-type(odd) {
   background-color: #7a995b;

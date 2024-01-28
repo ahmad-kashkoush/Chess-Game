@@ -4,8 +4,10 @@ export class Pawn extends Piece {
     constructor(pos, color, name) {
         super(pos, 'Pawn', color, name);
         this.firstTwoStep = true;
+        this.passent = false;
 
     }
+    setPassent(bool) { this.passent = bool; }
     setPos(position) {
         this.pos = position;
         this.firstTwoStep = false;

@@ -1,3 +1,12 @@
+import { Piece } from "./pieces/Piece";
+import { Pawn } from "./pieces/Pawn";
+import { Knight } from "./pieces/Knight";
+import { Rook } from "./pieces/Rook";
+import { Queen } from "./pieces/Queen";
+import { Bishop } from "./pieces/Bishop";
+
+import { King } from "./pieces/King";
+
 
 export class Game {
     /* Rules
@@ -60,12 +69,18 @@ export class Game {
 
         const pieceInSquare = this.getPieceByPos(position);
         if (pieceInSquare) this.kill(pieceInSquare);
+        else if (piece.name === "pawn") this.enPassent(piece, position);
         this.setImage({
             pos: prevPosition,
             truncate: true
         });
         piece.setPos(position);
         this.setImage({ ...piece, truncate: false });
+        // passent Move
+        if (piece.name === "pawn") {
+            piece.setPassent(Math.abs(position - prevPosition) === 20);
+        }
+
         if (piece.name === "pawn" && (position > 80 || position < 20))
             this.promote(piece);
         // TODO add castleRook method
@@ -97,12 +112,13 @@ export class Game {
             // allowedMoves = piece.getAllowedMoves();
             const arrOfPieces = allowedMoves.map(ele => this.getPieceByPos(ele));
             arrOfPieces.forEach(ele => {
-                if (ele && Math.abs(ele.pos - piece.pos) !== 11 && Math.abs(ele.pos - piece.pos !== 9))
+
+                if (ele && Math.abs(ele.pos - piece.pos) !== 11 && Math.abs(ele.pos - piece.pos) !== 9)
                     allowedMoves.splice(allowedMoves.indexOf(ele.pos), 1);
 
             });
 
-            return allowedMoves;
+            return [...allowedMoves, ...this.enPassentMoves(piece)];
         }
 
         const arrOfPieces = allowedMoves.map(ele => this.getPieceByPos(ele));
@@ -154,8 +170,7 @@ export class Game {
         // console.log(allowedMoves);
         return allowedMoves;
     }
-    promote() { }
-    enPassent() {
+    enPassent(piece, position) {
         /* Case
             - When friend pawn goes two moves 
             - friend pawn crossed potential capture square for enemy pawn
@@ -164,6 +179,54 @@ export class Game {
             - you mark crossed square as available 
             - moving to crossed means killing friend pawn
         */
+
+        const pos = this.turn === "white" ? position + 10 : position - 10;
+        if (pos === piece.pos) return;
+        const toKill = this.getPieceByPos(pos);
+        if (!toKill) return;
+        if (!toKill.passent) return;
+        this.kill(toKill);
+        this.setImage({
+            pos: pos,
+            truncate: true
+        });
+    }
+    enPassentMoves(piece) {
+
+        const piece1 = this.getPieceByPos(piece.pos - 1);
+        const piece2 = this.getPieceByPos(piece.pos + 1);
+        const allowed = [];
+        if (this.turn === "white") {
+            if (piece1 &&
+                piece1.name === "pawn" &&
+                piece1.color === "black" &&
+                piece1.passent) {
+                allowed.push(piece.pos - 11);
+            }
+            if (piece2 &&
+                piece2.name === "pawn" &&
+                piece2.color === "black" &&
+                piece2.passent) {
+                allowed.push(piece.pos - 9);
+            }
+
+        } else {
+            if (piece1 &&
+                piece1.name === "pawn" &&
+                piece1.color === "black" &&
+                piece1.passent) {
+                allowed.push(piece.pos + 9);
+            }
+            if (piece2 &&
+                piece2.name === "pawn" &&
+                piece2.color === "black" &&
+                piece2.passent) {
+                allowed.push(piece.pos + 11);
+            }
+
+        }
+        return allowed;
+
     }
     isInCheck() {
 

@@ -3,6 +3,11 @@ import { Piece } from "./Piece";
 export class King extends Piece {
     constructor(pos, color, name) {
         super(pos, "king", color, name);
+        this.isAbleToCastle = true;
+    }
+    setPos(position) {
+        this.pos = position;
+        this.isAbleToCastle = false;
     }
     getAllowedMoves() {
         return [this.pos + 1, this.pos - 1,

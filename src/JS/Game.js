@@ -58,17 +58,25 @@ export class Game {
         square.appendChild(img);
 
     }
-    getPiecesByColor() { return; }
+    getPiecesByColor(color) {
+        return this.pieces.filter(piece => piece.color === color);
+    }
     getPieceByPos(pos) { return this.pieces.find(piece => piece.pos === pos); }
-    movePiece(piece, position) {
+    movePiece(piece, position, castling = false) {
         if (!piece) return;
         const prevPosition = piece.pos;
 
-        if (this.getPieceAllowedMoves(piece).indexOf(position) === -1)
+        if (this.getPieceAllowedMoves(piece).indexOf(position) === -1 && !castling)
             return false;
 
         const pieceInSquare = this.getPieceByPos(position);
-        if (pieceInSquare) this.kill(pieceInSquare);
+        if (pieceInSquare) {
+            if (piece.name === "rook" && pieceInSquare.name === "king" && this.canCastle(pieceInSquare, piece)) {
+                this.castleRook(pieceInSquare, piece)
+                return true;
+            } else
+                this.kill(pieceInSquare);
+        }
         else if (piece.name === "pawn") this.enPassent(piece, position);
         this.setImage({
             pos: prevPosition,
@@ -132,6 +140,8 @@ export class Game {
             // remove ele if friend
             if (ele.color === this.turn)
                 toRemove.push(ele.pos);
+            if (piece.name === "rook" && ele.name === "king" && this.canCastle(ele, piece))
+                toRemove.pop(ele.pos);
             // remove elements in its direction
 
             // if (ele.pos > piece.pos) {
@@ -272,7 +282,7 @@ export class Game {
             - enemy piece are not attacking the king
         */
     }
-    castling() {
+    canCastle(king, rook) {
         /* When
             - King, rook has never moved
             - King is note in check
@@ -280,12 +290,20 @@ export class Game {
             - Squares in between
                 - empty
                 - are not under enemy gaze (first two squares)
-    
+     
           How
             - King moves two squares towards rook
             - rook moves to square behind the king
         */
+        if (!(king.isAbleToCastle && rook.isAbleToCastle)) return false;
+        return true;
 
+    }
+    castleRook(king, rook) {
+        const sign = rook.pos < king.pos ? -1 : 1;
+        this.movePiece(king, king.pos + 2 * sign, true);
+        this.movePiece(rook, king.pos - sign, true);
+        this.changeTurn();
     }
     changeTurn() {
         this.turn = this.turn === "white" ? "black" : "white";

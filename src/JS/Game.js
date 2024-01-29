@@ -58,18 +58,27 @@ export class Game {
         square.appendChild(img);
 
     }
-    getPiecesByColor() { return; }
+    getPiecesByColor(color) {
+        return this.pieces.filter(piece => piece.color === color);
+    }
     getPieceByPos(pos) { return this.pieces.find(piece => piece.pos === pos); }
-    movePiece(piece, position) {
+    movePiece(piece, position, castling = false) {
         if (!piece) return;
         const prevPosition = piece.pos;
 
-        if (this.getPieceAllowedMoves(piece).indexOf(position) === -1)
+        if (this.getPieceAllowedMoves(piece).indexOf(position) === -1 && !castling)
             return false;
 
         const pieceInSquare = this.getPieceByPos(position);
-        if (pieceInSquare) this.kill(pieceInSquare);
+        if (pieceInSquare) {
+            if (piece.name === "rook" && pieceInSquare.name === "king" && this.canCastle(pieceInSquare, piece)) {
+                this.castleRook(pieceInSquare, piece)
+                return true;
+            } else
+                this.kill(pieceInSquare);
+        }
         else if (piece.name === "pawn") this.enPassent(piece, position);
+
         this.setImage({
             pos: prevPosition,
             truncate: true
@@ -78,7 +87,11 @@ export class Game {
         this.setImage({ ...piece, truncate: false });
         // passent Move
         if (piece.name === "pawn") {
-            piece.setPassent(Math.abs(position - prevPosition) === 20);
+            const piece1 = this.getPieceByPos(position + 1);
+            const piece2 = this.getPieceByPos(position - 1);
+            let ok = piece1 && piece1.name === "pawn" && piece1.color !== this.turn;
+            ok = ok || (piece2 && piece2.name === "pawn" && piece2.color !== this.turn);
+            piece.setPassent(Math.abs(position - prevPosition) === 20 && ok);
         }
 
         if (piece.name === "pawn" && (position > 80 || position < 20))
@@ -107,23 +120,27 @@ export class Game {
     }
     unblockedMoves(piece) {
         let allowedMoves = piece.getAllowedMoves();
+        const toRemove = [];
 
         if (piece.name === "pawn") {
             // allowedMoves = piece.getAllowedMoves();
             const arrOfPieces = allowedMoves.map(ele => this.getPieceByPos(ele));
             arrOfPieces.forEach(ele => {
 
-                if (ele && Math.abs(ele.pos - piece.pos) !== 11 && Math.abs(ele.pos - piece.pos) !== 9)
-                    allowedMoves.splice(allowedMoves.indexOf(ele.pos), 1);
+                if (ele && (ele.color === this.turn || Math.abs(ele.pos - piece.pos) !== 11 && Math.abs(ele.pos - piece.pos) !== 9)) {
+                    toRemove.push(ele.pos);
+                    if (this.turn === "white") toRemove.push(...ele.getTopMoves());
+                    if (this.turn === "black") toRemove.push(...ele.getBottomMoves());
+                }
+
 
             });
-
+            allowedMoves = allowedMoves.filter(pos => (toRemove.indexOf(pos) === -1));
             return [...allowedMoves, ...this.enPassentMoves(piece)];
         }
 
         const arrOfPieces = allowedMoves.map(ele => this.getPieceByPos(ele));
 
-        const toRemove = [];
         for (const ele of arrOfPieces) {
 
             if (!ele) continue;
@@ -132,22 +149,10 @@ export class Game {
             // remove ele if friend
             if (ele.color === this.turn)
                 toRemove.push(ele.pos);
+            if (piece.name === "rook" && ele.name === "king" && this.canCastle(ele, piece))
+                toRemove.pop(ele.pos);
             // remove elements in its direction
 
-            // if (ele.pos > piece.pos) {
-            //     const diff = ele.pos - piece.pos;
-            //     if (diff % 10 === 0) toRemove.push(...ele.getBottomMoves());
-            //     else if (diff < 8) toRemove.push(...ele.getRightMoves());
-            //     else {
-            //         if(piece.get)
-            //     }
-            // } else {
-            //     const diff = piece.pos - ele.pos;
-            //     if (diff % 10 === 0) toRemove.push(...ele.getTopMoves());
-            //     if (diff % 10 === 9) toRemove.push(...ele.getTopRightMoves());
-            //     if (diff === 1) toRemove.push(...ele.getRightMoves());
-            //     else if (diff % 10 === 1) toRemove.push(...ele.getTopLeftMoves());
-            // }
             if (piece.getTopMoves().indexOf(ele.pos) !== -1)
                 toRemove.push(...ele.getTopMoves());
             if (piece.getBottomMoves().indexOf(ele.pos) !== -1)
@@ -164,8 +169,16 @@ export class Game {
                 toRemove.push(...ele.getBottomRightMoves());
             if (piece.getBottomLeftMoves().indexOf(ele.pos) !== -1)
                 toRemove.push(...ele.getBottomLeftMoves());
-
         }
+        if (piece.name === "king" && piece.color === this.turn) {
+            let enemyPieces = this.pieces.filter(en => en.color !== piece.color);
+            console.log(enemyPieces);
+            enemyPieces.forEach(en => {
+                toRemove.push(...this.getPieceAllowedMoves(en));
+            })
+        }
+
+
         allowedMoves = allowedMoves.filter(pos => (toRemove.indexOf(pos) === -1));
         // console.log(allowedMoves);
         return allowedMoves;
@@ -191,11 +204,11 @@ export class Game {
         /* Case
       - When friend pawn goes two moves 
       - friend pawn crossed potential capture square for enemy pawn
-   What Happens?
+    What Happens?
       - enemy pawn can still capture it
       - you mark crossed square as available 
       - moving to crossed means killing friend pawn
-  */
+    */
 
         const pos = this.turn === "white" ? position + 10 : position - 10;
         if (pos === piece.pos) return;
@@ -272,7 +285,7 @@ export class Game {
             - enemy piece are not attacking the king
         */
     }
-    castling() {
+    canCastle(king, rook) {
         /* When
             - King, rook has never moved
             - King is note in check
@@ -280,12 +293,20 @@ export class Game {
             - Squares in between
                 - empty
                 - are not under enemy gaze (first two squares)
-    
+     
           How
             - King moves two squares towards rook
             - rook moves to square behind the king
         */
+        if (!(king.isAbleToCastle && rook.isAbleToCastle)) return false;
+        return true;
 
+    }
+    castleRook(king, rook) {
+        const sign = rook.pos < king.pos ? -1 : 1;
+        this.movePiece(king, king.pos + 2 * sign, true);
+        this.movePiece(rook, king.pos - sign, true);
+        this.changeTurn();
     }
     changeTurn() {
         this.turn = this.turn === "white" ? "black" : "white";

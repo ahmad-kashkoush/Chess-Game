@@ -44,8 +44,10 @@ const beginGame = function (game) {
     const movePieceToSquare = function (square) {
         const position = parseInt(square.dataset.pos);
         const piece = game.getPieceByPos(position);
-
-        if (piece && piece.color === game.turn) {
+        let castleCondition = piece && clickedPiece
+        castleCondition &&= clickedPiece.name === "rook" && piece.name === "king";
+        castleCondition &&= game.canCastle(piece, clickedPiece);
+        if (piece && piece.color === game.turn && !castleCondition) {
             removeAvailableSelection();
 
             return setAllowedSquares(piece);

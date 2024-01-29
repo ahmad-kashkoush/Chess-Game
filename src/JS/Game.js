@@ -78,6 +78,7 @@ export class Game {
                 this.kill(pieceInSquare);
         }
         else if (piece.name === "pawn") this.enPassent(piece, position);
+
         this.setImage({
             pos: prevPosition,
             truncate: true
@@ -86,7 +87,11 @@ export class Game {
         this.setImage({ ...piece, truncate: false });
         // passent Move
         if (piece.name === "pawn") {
-            piece.setPassent(Math.abs(position - prevPosition) === 20);
+            const piece1 = this.getPieceByPos(position + 1);
+            const piece2 = this.getPieceByPos(position - 1);
+            let ok = piece1 && piece1.name === "pawn" && piece1.color !== this.turn;
+            ok = ok || (piece2 && piece2.name === "pawn" && piece2.color !== this.turn);
+            piece.setPassent(Math.abs(position - prevPosition) === 20 && ok);
         }
 
         if (piece.name === "pawn" && (position > 80 || position < 20))
@@ -115,17 +120,22 @@ export class Game {
     }
     unblockedMoves(piece) {
         let allowedMoves = piece.getAllowedMoves();
+        const toRemove = [];
 
         if (piece.name === "pawn") {
             // allowedMoves = piece.getAllowedMoves();
             const arrOfPieces = allowedMoves.map(ele => this.getPieceByPos(ele));
             arrOfPieces.forEach(ele => {
 
-                if (ele && Math.abs(ele.pos - piece.pos) !== 11 && Math.abs(ele.pos - piece.pos) !== 9)
-                    allowedMoves.splice(allowedMoves.indexOf(ele.pos), 1);
+                if (ele && (ele.color === this.turn || Math.abs(ele.pos - piece.pos) !== 11 && Math.abs(ele.pos - piece.pos) !== 9)) {
+                    toRemove.push(ele.pos);
+                    if (this.turn === "white") toRemove.push(...ele.getTopMoves());
+                    if (this.turn === "black") toRemove.push(...ele.getBottomMoves());
+                }
+
 
             });
-
+            allowedMoves = allowedMoves.filter(pos => (toRemove.indexOf(pos) === -1));
             return [...allowedMoves, ...this.enPassentMoves(piece)];
         }
 
@@ -201,11 +211,11 @@ export class Game {
         /* Case
       - When friend pawn goes two moves 
       - friend pawn crossed potential capture square for enemy pawn
-   What Happens?
+    What Happens?
       - enemy pawn can still capture it
       - you mark crossed square as available 
       - moving to crossed means killing friend pawn
-  */
+    */
 
         const pos = this.turn === "white" ? position + 10 : position - 10;
         if (pos === piece.pos) return;

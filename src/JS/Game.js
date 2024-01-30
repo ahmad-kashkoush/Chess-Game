@@ -258,18 +258,53 @@ export class Game {
         return allowed;
 
     }
-    isInCheck() {
+
+    myKingChecked(pos, kill = true) {
+
+        const clickedPiece = this.curPiece;
+        const returnToPos = clickedPiece.pos;
+        const enemyPiece = this.getPieceByPos(pos);
+        const needToKill = kill && clickedPiece && enemyPiece && enemyPiece.name !== "king";
+        if (needToKill) this.pieces.splice((this.pieces.indexOf(enemyPiece), 1));
+        clickedPiece.setPos(pos);
+        const stillChecked = this.kingChecked(this.turn);
+        if (needToKill) this.pieces.push(enemyPiece);
+        clickedPiece.setPos(returnToPos);
+        return stillChecked;
+
 
     }
-    check() {
-        /* 
-            - display king available moves
-            - display any piece 
-                - can capture the piece make king in check
-                - can block the piece make king in check
-            
-        */
+    kingChecked(color) {
 
+        const enemyColor = color === "white" ? "black" : "white";
+        const returnToPiece = this.curPiece;
+        const enemyPieces = this.getPiecesByColor(enemyColor);
+        const king = this.pieces.find(friendKing => (friendKing.color === color && friendKing.name === "king"));
+        for (const enemy of enemyPieces) {
+            this.setCur(enemy);
+            const enemyAllowedMoves = this.getPieceAllowedMoves(enemy);
+            if (enemyAllowedMoves.indexOf(king.pos) !== -1) {
+                this.setCur(returnToPiece);
+                return true;
+            }
+        }
+        this.setCur(returnToPiece);
+        return false;
+
+    }
+    kingDead(color) {
+        // King Dead: no Piece can move
+        const returnToPiece = this.curPiece;
+        const friendPieces = this.getPiecesByColor(color);
+        for (const piece of friendPieces) {
+            this.setCur(piece);
+            if (this.getPieceAllowedMoves(piece).length) {
+                this.setCur(returnToPiece);
+                return false;
+            }
+        }
+        this.setCur(returnToPiece);
+        return true;
     }
     checkmate() {
         /* 

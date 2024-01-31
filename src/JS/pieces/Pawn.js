@@ -9,6 +9,8 @@ export class Pawn extends Piece {
     }
     setPassent(bool) { this.passent = bool; }
     setPos(position) {
+        if (this.pos === position)
+            this.firstTwoStep = this.firstTwoStep === true ? true : false;
         this.pos = position;
         this.firstTwoStep = false;
     }

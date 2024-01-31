@@ -9,7 +9,7 @@ import { King } from "./pieces/King";
 
 const beginGame = function (game) {
     // ! Helper Functions
-
+    const statusHeading = document.querySelector("h1");
     const removeAvailableSelection = () => {
         [...document.querySelectorAll('.available-square')].forEach(ele => ele.classList.remove('available-square'));
     }
@@ -65,17 +65,12 @@ const beginGame = function (game) {
         });
     });
 
-
-    //TODO  game.handler("changeTurn", function (e) {
-
-    // });
-    //TODO game.handler("movePiece", function (e) { })
-    // TODO game.handler("kill", function (e) { })
-    // TODO game.handler("promote", function (e) { })
-    // TODO game.handler("", function(e){})
-    // TODO game.handler("check", function(e){})
-    // TODO game.handler("castle", function(e){})
-    // TODO game.handler("passent", function(e){})
+    game.handler("changeTurn", function (e) {
+        document.querySelector("h1 span").textContent = `${game.turn} turn`;
+    })
+    game.handler("checkmate", function (e) {
+        document.querySelector("h1 span").textContent = `${game.turn} Is Dead, Refresh Page for new game`;
+    })
 
 }
 
@@ -119,5 +114,6 @@ const pieces = [
 
 
 ]
+
 const game = new Game(pieces);
 beginGame(game);

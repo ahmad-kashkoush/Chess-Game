@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "cp -r src/img/*png dist && parcel src/index.html ",
-    "build": "parcel build src/index.html"
+    "build": "mkdir dist && cp -r src/img/*png dist && parcel build src/index.html"
   },
   "keywords": [],
   "author": "",

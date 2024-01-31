@@ -29,7 +29,7 @@ const beginGame = function (game) {
 
     const setAllowedSquares = function (piece) {
         clickedPiece = piece;
-
+        // game.setCur(clickedPiece);
         const arrOfAllowed = game.getPieceAllowedMoves(piece);
 
         removeAvailableSelection();

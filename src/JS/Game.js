@@ -20,14 +20,7 @@ export class Game {
         // messages to show
         this._events = {
             changeTurn: [],
-            movePiece: [],
-            kill: [],
-            promote: [],
-            passent: [],
-            check: [],
-            castle: [],
-            stalemate: [],
-
+            checkmate: [],
 
         }
     }
@@ -64,9 +57,9 @@ export class Game {
     getPieceByPos(pos) { return this.pieces.find(piece => piece.pos === pos); }
     movePiece(piece, position, castling = false) {
         if (!piece) return;
-        const prevPosition = piece.pos;
         if (this.getPieceAllowedMoves(piece).indexOf(position) === -1 && !castling)
             return false;
+        const prevPosition = piece.pos;
         this.setCur(piece);
         const pieceInSquare = this.getPieceByPos(position);
         if (pieceInSquare) {
@@ -100,17 +93,13 @@ export class Game {
         if (position !== prevPosition)
             this.changeTurn();
 
-        // if (this.kingChecked(this.turn)) {
-        //     console.log(`${this.turn}: Checked`);
-        //     if (this.kingDead(this.turn))
-        //         this.checkmate(this.turn);
-        // }
+        if (this.kingChecked(this.turn)) {
+            console.log(`${this.turn}: Checked`);
+            if (this.kingDead(this.turn))
+                this.checkmate(this.turn);
+        }
         return true;
-        // if (piece.name === "king" && pieceInSquare.name === "rook" && pieceInSquare.ableToCastle && Math.abs(prevPosition - position) < 3) {
-        //     this.castle();
 
-        //     piece.setPos(position);
-        // }
 
     }
     getPieceAllowedMoves(piece) {
@@ -125,11 +114,7 @@ export class Game {
                     notAvailable.push(...this.getPieceAllowedMoves(p));
                 })
             } else {
-                /* Input:allowedMoves, Output:[toBlockPiece,toKillPiece] */
 
-                // console.log(this.pieces
-                //     .filter(en => en.color === piece.color)
-                //     .map(en => `${en.color},${en.name},${en.pos}`));
                 if (this.kingChecked(this.turn)) {
                     allowedMoves.forEach(move => {
                         if (this.myKingChecked(move, true))
@@ -341,6 +326,7 @@ export class Game {
         - End game
         - reset board
          */
+        this.triggerHandler("checkmate", this.turn);
     }
     stalemate() {
         /* 
@@ -374,6 +360,7 @@ export class Game {
     }
     changeTurn() {
         this.turn = this.turn === "white" ? "black" : "white";
+        this.triggerHandler("changeTurn", this.turn);
     }
 
 

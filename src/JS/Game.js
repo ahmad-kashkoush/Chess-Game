@@ -65,10 +65,9 @@ export class Game {
     movePiece(piece, position, castling = false) {
         if (!piece) return;
         const prevPosition = piece.pos;
-
         if (this.getPieceAllowedMoves(piece).indexOf(position) === -1 && !castling)
             return false;
-
+        this.setCur(piece);
         const pieceInSquare = this.getPieceByPos(position);
         if (pieceInSquare) {
             if (piece.name === "rook" && pieceInSquare.name === "king" && this.canCastle(pieceInSquare, piece)) {
@@ -98,7 +97,14 @@ export class Game {
             this.promote(piece);
         // TODO add castleRook method
         // TODO add king check method
-        this.changeTurn();
+        if (position !== prevPosition)
+            this.changeTurn();
+
+        // if (this.kingChecked(this.turn)) {
+        //     console.log(`${this.turn}: Checked`);
+        //     if (this.kingDead(this.turn))
+        //         this.checkmate(this.turn);
+        // }
         return true;
         // if (piece.name === "king" && pieceInSquare.name === "rook" && pieceInSquare.ableToCastle && Math.abs(prevPosition - position) < 3) {
         //     this.castle();
@@ -108,20 +114,42 @@ export class Game {
 
     }
     getPieceAllowedMoves(piece) {
+        let allowedMoves = [];
+        if (piece.color === this.turn) {
+            const notAvailable = [];
+            this.setCur(piece);
+            allowedMoves = this.unblockedMoves(piece);
+            if (piece.name === "king") {
+                let enemyPieces = this.getPiecesByColor(this.turn === "white" ? "black" : "white");
+                enemyPieces.forEach(p => {
+                    notAvailable.push(...this.getPieceAllowedMoves(p));
+                })
+            } else {
+                /* Input:allowedMoves, Output:[toBlockPiece,toKillPiece] */
 
-        if (piece.name === "knight")
-            return piece.getAllowedMoves().filter(pos => {
-                const piece = this.getPieceByPos(pos);
-                if (piece && piece.color === this.turn)
-                    return false;
-                return true;
-            });
-        return this.unblockedMoves(piece);
+                // console.log(this.pieces
+                //     .filter(en => en.color === piece.color)
+                //     .map(en => `${en.color},${en.name},${en.pos}`));
+                if (this.kingChecked(this.turn)) {
+                    allowedMoves.forEach(move => {
+                        if (this.myKingChecked(move, true))
+                            notAvailable.push(move);
+                    })
+                }
+            }
+            allowedMoves = allowedMoves.filter(allowed => (notAvailable.indexOf(allowed) === -1));
+        }
+        else {
+            allowedMoves = this.unblockedMoves(piece);
+        }
+
+        return allowedMoves;
+
     }
-    unblockedMoves(piece) {
+    unblockedMoves(piece, checking = false) {
         let allowedMoves = piece.getAllowedMoves();
         const toRemove = [];
-
+        // chcking condition
         if (piece.name === "pawn") {
             // allowedMoves = piece.getAllowedMoves();
             const arrOfPieces = allowedMoves.map(ele => this.getPieceByPos(ele));
@@ -135,7 +163,8 @@ export class Game {
 
 
             });
-            allowedMoves = allowedMoves.filter(pos => (toRemove.indexOf(pos) === -1));
+            allowedMoves = allowedMoves
+                .filter(pos => (toRemove.indexOf(pos) === -1))
             return [...allowedMoves, ...this.enPassentMoves(piece)];
         }
 
@@ -147,9 +176,9 @@ export class Game {
             if (toRemove.indexOf(ele.pos) !== -1) continue;
 
             // remove ele if friend
-            if (ele.color === this.turn)
+            if (ele.color === piece.color)
                 toRemove.push(ele.pos);
-            if (piece.name === "rook" && ele.name === "king" && this.canCastle(ele, piece))
+            if (piece.name === "rook" && this.canCastle(ele, piece))
                 toRemove.pop(ele.pos);
             // remove elements in its direction
 
@@ -170,16 +199,12 @@ export class Game {
             if (piece.getBottomLeftMoves().indexOf(ele.pos) !== -1)
                 toRemove.push(...ele.getBottomLeftMoves());
         }
-        if (piece.name === "king" && piece.color === this.turn) {
-            let enemyPieces = this.pieces.filter(en => en.color !== piece.color);
-            console.log(enemyPieces);
-            enemyPieces.forEach(en => {
-                toRemove.push(...this.getPieceAllowedMoves(en));
-            })
-        }
 
 
-        allowedMoves = allowedMoves.filter(pos => (toRemove.indexOf(pos) === -1));
+
+        allowedMoves = allowedMoves
+            .filter(pos => (toRemove.indexOf(pos) === -1));
+
         // console.log(allowedMoves);
         return allowedMoves;
     }
@@ -265,7 +290,8 @@ export class Game {
         const returnToPos = clickedPiece.pos;
         const enemyPiece = this.getPieceByPos(pos);
         const needToKill = kill && clickedPiece && enemyPiece && enemyPiece.name !== "king";
-        if (needToKill) this.pieces.splice((this.pieces.indexOf(enemyPiece), 1));
+        if (enemyPiece) console.log(this.getPieceAllowedMoves(enemyPiece), needToKill);
+        if (needToKill) this.kill(enemyPiece);
         clickedPiece.setPos(pos);
         const stillChecked = this.kingChecked(this.turn);
         if (needToKill) this.pieces.push(enemyPiece);
@@ -280,15 +306,18 @@ export class Game {
         const returnToPiece = this.curPiece;
         const enemyPieces = this.getPiecesByColor(enemyColor);
         const king = this.pieces.find(friendKing => (friendKing.color === color && friendKing.name === "king"));
+
+        // console.log(enemyPieces);
         for (const enemy of enemyPieces) {
             this.setCur(enemy);
             const enemyAllowedMoves = this.getPieceAllowedMoves(enemy);
             if (enemyAllowedMoves.indexOf(king.pos) !== -1) {
+                console.log(`${enemy.color} ${enemy.name}:`, enemyAllowedMoves);
                 this.setCur(returnToPiece);
                 return true;
             }
         }
-        this.setCur(returnToPiece);
+
         return false;
 
     }

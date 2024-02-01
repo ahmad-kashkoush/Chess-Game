@@ -12,6 +12,7 @@ const beginGame = function (game) {
     const statusHeading = document.querySelector("h1");
     const removeAvailableSelection = () => {
         [...document.querySelectorAll('.available-square')].forEach(ele => ele.classList.remove('available-square'));
+        [...document.querySelectorAll('.available-square-capture')].forEach(ele => ele.classList.remove('available-square-capture'));
     }
 
 
@@ -35,7 +36,8 @@ const beginGame = function (game) {
         removeAvailableSelection();
         arrOfAllowed?.forEach(pos => {
             const availableSquare = game.getPieceSquare(pos);
-            availableSquare.classList.add('available-square');
+            const classToAdd = availableSquare.querySelector("img") ? 'available-square-capture' : 'available-square';
+            availableSquare.classList.add(classToAdd);
 
         })
 
@@ -70,6 +72,9 @@ const beginGame = function (game) {
     })
     game.handler("checkmate", function (e) {
         document.querySelector("h1 span").textContent = `${game.turn} Is Dead, Refresh Page for new game`;
+    })
+    game.handler("checked", function (e) {
+        document.querySelector("h1 span").textContent = `${game.turn} Is Checked`;
     })
 
 }

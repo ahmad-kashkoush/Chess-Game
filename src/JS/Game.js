@@ -21,6 +21,7 @@ export class Game {
         this._events = {
             changeTurn: [],
             checkmate: [],
+            checked: [],
 
         }
     }
@@ -94,9 +95,11 @@ export class Game {
             this.changeTurn();
 
         if (this.kingChecked(this.turn)) {
-            console.log(`${this.turn}: Checked`);
+
             if (this.kingDead(this.turn))
                 this.checkmate(this.turn);
+            else
+                this.triggerHandler("checked", this.turn);
         }
         return true;
 
@@ -299,6 +302,7 @@ export class Game {
             if (enemyAllowedMoves.indexOf(king.pos) !== -1) {
                 console.log(`${enemy.color} ${enemy.name}:`, enemyAllowedMoves);
                 this.setCur(returnToPiece);
+
                 return true;
             }
         }
